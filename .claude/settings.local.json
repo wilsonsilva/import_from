@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bundle exec rspec:*)",
+      "Bash(bundle exec rubocop:*)",
+      "Bash(bundle exec rake:*)",
+      "Bash(mkdir:*)",
+      "Bash(bin/console:*)",
+      "Bash(bundle exec ruby:*)",
+      "Bash(git:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": false
+}
