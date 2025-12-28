@@ -9,3 +9,6 @@
 
 # rspec failure tracking
 .rspec_status
+
+# yardstick report
+measurements/report.txt

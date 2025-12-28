@@ -1,10 +1,32 @@
 # frozen_string_literal: true
 
-require "import_from"
+require 'simplecov'
+require 'simplecov_json_formatter'
+require 'simplecov-console'
+
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
+  [
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::JSONFormatter,
+    SimpleCov::Formatter::Console
+  ]
+)
+
+unless ENV['COVERAGE'] == 'false'
+  SimpleCov.start do
+    root 'lib'
+    coverage_dir "#{Dir.pwd}/coverage"
+  end
+end
+
+require 'import_from'
+
+# Require support files
+Dir[File.join(File.dirname(__FILE__), 'support', '**', '*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
-  config.example_status_persistence_file_path = ".rspec_status"
+  config.example_status_persistence_file_path = '.rspec_status'
 
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!
