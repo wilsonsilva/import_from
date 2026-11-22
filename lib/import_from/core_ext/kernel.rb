@@ -40,40 +40,63 @@ module Kernel
     # Create a new isolated box
     box = Ruby::Box.new
 
-    require 'bundler/setup'
-
-    # Copy the load path into the box
-    $LOAD_PATH.each do |path|
-      # $LOAD_PATH << path
-      box.eval("$LOAD_PATH << #{path.inspect}")
-    end
+    puts box.load_path
 
     # Load the library into the box
     # If it's a relative path, use require_relative, otherwise require
     if gem_name.start_with?('.')
       box.require_relative(gem_name)
     else
-      require gem_name
-      box.require(gem_name)
+      # box.eval <<-EVAL
+      #   begin
+      #     gem_original_require('#{gem_name}')
+      #   rescue LoadError => load_error
+      #     if load_error.path == #{gem_name} && RUBYGEMS_ACTIVATION_MONITOR.synchronize { Gem.try_activate(#{gem_name}) }
+      #       return gem_original_require(#{gem_name})
+      #     end
+      #
+      #     raise load_error
+      #   end
+      # EVAL
+
+      puts box.eval(<<~RUBY)
+        require "#{gem_name}"
+
+        puts Money::VERSION
+      RUBY
+
+      # This does not work
+      # puts box.require(gem_name)
     end
 
-    Object.const_set(as, box) if as
+    # if as
+    #   puts "Aliasing box as #{as}"
+    #   Object.const_set(as, box)
+    # else
+    #   puts "Aliasing box as #{gem_name.capitalize}"
+    #   Object.const_set(gem_name.capitalize, box)
+    # end
 
-    return box if import == '*'
-
-    # Extract the requested constants
-    targets = Array(import)
-    results = targets.map do |const_name|
-      # Fetch the constant from the box namespace
-      klass = box.const_get(const_name)
-
-      # Inject the constant into the caller's namespace (Object by default)
-      # This makes it look like it was imported globally/locally
-      Object.const_set(const_name, klass)
-      klass
+    if import == '*'
+      puts 'Importing all constants from gem'
+      return box
     end
 
-    results.size == 1 ? results.first : results
+    # # Extract the requested constants
+    # targets = Array(import)
+    # results = targets.map do |const_name|
+    #   # Fetch the constant from the box namespace
+    #   klass = box.const_get(const_name)
+    #
+    #   # Inject the constant into the caller's namespace (Object by default)
+    #   # This makes it look like it was imported globally/locally
+    #   Object.const_set(const_name, klass)
+    #   klass
+    # end
+    #
+    # results.size == 1 ? results.first : results
+
+    box
   end
 
   # Imports constants with Python-style syntax supporting flexible parameter order
